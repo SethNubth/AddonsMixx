@@ -1,5 +1,3 @@
-
-
 function RR_RollFrame_SortOutSize()
 	RR_RollFrame:SetHeight(155)
 	
@@ -21,35 +19,27 @@ end
 -- Setuo extra frame commands
 function RR_ExtraFrame_Options()
 
-
  if RaidRoll_LootTrackerLoaded~=true then
 -- FRAME NOT LOADED MESSAGE
-	
-	RR_LOOT_FRAME_msg = RR_LOOT_FRAME:CreateFontString("RR_LOOT_FRAME_msg" ,"ARTWORK","GameFontNormal");
-	--RR_LOOT_FRAME_msg:SetAllPoints();
-	RR_LOOT_FRAME_msg:SetJustifyH("center")
-	RR_LOOT_FRAME_msg:SetPoint("center",RR_LOOT_FRAME,"center",0, 0);
-	
-	RR_LOOT_FRAME_msg:SetText("Loot Frame Not Loaded")
+	-- FIX BUG 2: Crear solo si no existe (evita FontString infinito)
+	if not RR_LOOT_FRAME_msg then
+		RR_LOOT_FRAME_msg = RR_LOOT_FRAME:CreateFontString("RR_LOOT_FRAME_msg" ,"ARTWORK","GameFontNormal");
+		RR_LOOT_FRAME_msg:SetJustifyH("center")
+		RR_LOOT_FRAME_msg:SetPoint("center",RR_LOOT_FRAME,"center",0, 0);
+		RR_LOOT_FRAME_msg:SetText("Loot Frame Not Loaded")
+	end
  end
 
-
-
-
-
-
  RR_RollFrame:SetScript("OnShow", function()
-									RR_GuildRankUpdate()
-									RR_GetEPGPGuildData()
-									
-									RR_RollFrame_SortOutSize()
-									
-									--RaidRoll_AnnounceWinnerButton
-									--RR_Roll_5SecAndAnnounce
-								end)
+		RR_GuildRankUpdate()
+		RR_GetEPGPGuildData()
+		RR_RollFrame_SortOutSize()
+	end)
 
-  if RaidRoll_DBPC[UnitName("player")]["RR_ExtraWidth"] == nil then RaidRoll_DBPC[UnitName("player")]["RR_ExtraWidth"] = 0 end
-
+  -- FIX BUG 3: Check nil seguro para RaidRoll_DBPC
+  local pName = UnitName("player")
+  if not RaidRoll_DBPC[pName] then RaidRoll_DBPC[pName] = {} end
+  if RaidRoll_DBPC[pName]["RR_ExtraWidth"] == nil then RaidRoll_DBPC[pName]["RR_ExtraWidth"] = 0 end
 
 	Raid_Roll_Name=CreateFrame("FRAME","Raid_Roll_Name",RR_RollFrame);
 	Raid_Roll_Name:SetWidth(150); 
@@ -63,18 +53,15 @@ function RR_ExtraFrame_Options()
 	Raid_Roll_Name_String:SetText("Musou's Raid Roller")
 
 
---------------------------------------------------------------
-
 	RR_BottomFrame = CreateFrame("Frame","RR_Frame",RR_RollFrame)
 
 	local backdrop = {
-	  bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",  -- path to the background texture
-	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",  -- path to the border texture
-	  
-	  tile = false,    -- true to repeat the background texture to fill the frame, false to scale it
-	  tileSize = 32,  -- size (width or height) of the square repeating background tiles (in pixels)
-	  edgeSize = 20,  -- thickness of edge segments and square size of edge corners (in pixels)
-	  insets = {    -- distance from the edges of the frame to those of the background texture (in pixels)
+	  bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	  tile = false,
+	  tileSize = 32,
+	  edgeSize = 20,
+	  insets = {
 	    left = 4,
 	    right = 4,
 	    top = 4,
@@ -82,12 +69,9 @@ function RR_ExtraFrame_Options()
 	  }
 	}
 
-
 	RR_BottomFrame:SetBackdrop(backdrop)
-
-	--RR_BottomFrame:SetFrameStrata("MEDIUM")
-	RR_BottomFrame:SetWidth(180) -- Set these to whatever height/width is needed 
-	RR_BottomFrame:SetHeight(100) -- for your Texture
+	RR_BottomFrame:SetWidth(180)
+	RR_BottomFrame:SetHeight(100)
 	RR_BottomFrame:SetPoint("Top",RR_RollFrame,"Bottom",0,6);
 
 	RR_BottomFrame:EnableMouse(true)
@@ -98,30 +82,25 @@ function RR_ExtraFrame_Options()
 	  _G["RR_RollFrame"]:StopMovingOrSizing()
 	end)
 
-
---------------------------------------------------------------
 -- Hide the options frame
---------------------------------------------------------------
+
 	RR_BottomFrame:Hide()
 	_G["RaidRoll_Catch_All"]:Hide()
 	_G["RaidRoll_Allow_All"]:Hide()
---------------------------------------------------------------
 
 
---------------------------------------------------------------
 -- Set the backdrops for the other frames
---------------------------------------------------------------
+
 	RR_NAME_FRAME:SetBackdrop(backdrop)
 	
 	
 	local RR_RollFrame_backdrop = {
-	  bgFile = "Interface\\Addons\\RaidRoll\\Images\\Teldrassil",  -- path to the background texture
-	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",  -- path to the border texture
-	  
-	  tile = false,    -- true to repeat the background texture to fill the frame, false to scale it
-	  tileSize = 32,  -- size (width or height) of the square repeating background tiles (in pixels)
-	  edgeSize = 20,  -- thickness of edge segments and square size of edge corners (in pixels)
-	  insets = {    -- distance from the edges of the frame to those of the background texture (in pixels)
+	  bgFile = "Interface\\Addons\\RaidRoll\\Images\\Teldrassil",
+	  edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	  tile = false,
+	  tileSize = 32,
+	  edgeSize = 20,
+	  insets = {
 	    left = 4,
 	    right = 4,
 	    top = 4,
@@ -130,10 +109,6 @@ function RR_ExtraFrame_Options()
 	}
 	
 	_G["RR_RollFrame"]:SetBackdrop(RR_RollFrame_backdrop)
---------------------------------------------------------------
-
-
---RR_RollFrame:Show()
 
 
 -- Change the height of the main screen
@@ -161,7 +136,6 @@ function RR_ExtraFrame_Options()
 		Raid_Roll_SetSymbol:SetPoint("TOPLEFT", _G["RR_RollFrame"], "TOPLEFT",30,-42-(12*(i-1)))
 		Raid_Roll_SetSymbol:SetScript("OnClick", function(self,button )
 													ID = tonumber(string.sub(self:GetName(),string.len(self:GetName())))
-													--ID = ID + RaidRoll_Slider:GetValue() - 1
 													if RaidRoll_DB["debug"] == true then
 														RR_Test(self:GetName())
 														RR_Test(ID)
@@ -198,12 +172,8 @@ function RR_ExtraFrame_Options()
 		Raid_Roll_Rank_String_i:SetJustifyH("LEFT")
 		Raid_Roll_Rank_String_i:SetWidth(65+RaidRoll_DBPC[UnitName("player")]["RR_ExtraWidth"]); 
 		Raid_Roll_Rank_String_i:SetHeight(11); 
-		
-		
 		Raid_Roll_Rank_String_i:SetText("Rank "..i)
 	end
-
-
 
 	_G["RR_Close_Button"]:ClearAllPoints()
 	_G["RR_Close_Button"]:SetWidth(30)
@@ -259,10 +229,193 @@ function RR_ExtraFrame_Options()
 	RaidRoll_AnnounceWinnerButton:SetPoint("BottomRight", RR_RollFrame, "Bottom", -60,30)
 	RaidRoll_AnnounceWinnerButton:SetText("A")
 	RaidRoll_AnnounceWinnerButton:SetScript("OnClick",	function()
-															local Winner,Roll,EPGP = RR_FindWinner(rr_CurrentRollID)
-															
-															if Winner  ~= "" then
-																if GetLocale() ~= "zhTW" and GetLocale() ~= "ruRU" and GetLocale() ~= "zhCN" then
+			local Winner,Roll,EPGP = RR_FindWinner(rr_CurrentRollID)
+			if Winner  ~= "" then
+				if GetLocale() ~= "zhTW" and GetLocale() ~= "ruRU" and GetLocale() ~= "zhCN" then
+					Winner = string.upper(string.sub(Winner,1,1))..string.lower(string.sub(Winner,2))
+				end
+				if RaidRoll_DBPC[UnitName("player")]["RR_EPGP_Enabled"] ==  true then
+					if rr_Item[rr_CurrentRollID] == "ID #"..rr_CurrentRollID then
+						Winner_Message = string.format(RAIDROLL_LOCALE["won_PR_value"], Winner,EPGP)
+					else
+						Winner_Message = string.format(RAIDROLL_LOCALE["won_item_PR_value"], Winner, rr_Item[rr_CurrentRollID],EPGP)
+					end
+				else
+					if rr_Item[rr_CurrentRollID] == "ID #"..rr_CurrentRollID then
+						Winner_Message = string.format(RAIDROLL_LOCALE["won_with"], Winner,Roll)
+					else
+						Winner_Message = string.format(RAIDROLL_LOCALE["won_item_with"], Winner,rr_Item[rr_CurrentRollID],Roll)
+					end
+				end
+			else
+				Winner_Message = string.format(RAIDROLL_LOCALE["No_winner_for"], rr_Item[rr_CurrentRollID])
+			end
+			SendChatMessage(Winner_Message, rr_AnnounceType)
+			if RR_RollCheckBox_GuildAnnounce:GetChecked() then
+				if RR_RollCheckBox_GuildAnnounce_Officer:GetChecked() then
+					SendChatMessage(Winner_Message, "OFFICER")
+				else
+					SendChatMessage(Winner_Message, "GUILD")
+				end
+			end
+		end)
+	RaidRoll_AnnounceWinnerButton:SetScript("OnEnter",function(self) RR_MouseOverTooltip(self:GetName())	end)
+	RaidRoll_AnnounceWinnerButton:SetScript("OnLeave", function() GameTooltip:Hide()	end)
+	RaidRoll_AnnounceWinnerButton:Hide()
+ 
+	
+-- finish rolling
+	RR_Roll_5SecAndAnnounce = CreateFrame("Button", "RR_Roll_5SecAndAnnounce", RR_RollFrame, "UIPanelButtonTemplate")
+	RR_Roll_5SecAndAnnounce:SetWidth(168)
+	RR_Roll_5SecAndAnnounce:SetHeight(20)
+	RR_Roll_5SecAndAnnounce:SetPoint("BottomRight", RR_RollFrame, "Bottom", 85,30)
+	RR_Roll_5SecAndAnnounce:SetText(RAIDROLL_LOCALE["Awaiting Rolls"])
+	RR_Roll_5SecAndAnnounce:SetScript("OnClick",function()
+		if RR_Timestamp ~= nil then
+			if tonumber(RR_Timestamp) ~= nil then
+				if rr_CurrentRollID == rr_rollID then
+					if ((60 - (time() - RR_Timestamp)) <= 11 or RaidRoll_DBPC[UnitName("player")]["RR_RollCheckBox_No_countdown"] == true ) and (60 - (time() - RR_Timestamp)) > 0 then
+						if RaidRoll_DB["debug"] == true then RR_Test("Finishing Early") end
+						RR_HasAnnounced_10_Sec = true
+						RR_HasAnnounced_5_Sec = true
+						if GetNumRaidMembers() ~= 0 then
+							rr_AnnounceType = "RAID"
+						elseif GetNumPartyMembers() > 0 then
+							rr_AnnounceType = "PARTY"
+						else
+							rr_AnnounceType = "SAY"
+						end
+						if RaidRoll_DBPC[UnitName("player")]["RR_RollCheckBox_No_countdown"] == false then
+							SendChatMessage(RAIDROLL_LOCALE["Finishing_Rolling_Early"], rr_AnnounceType)
+						end
+						RR_RollCountdown = true
+						RR_AnnounceCountdowns = true
+						RR_Timestamp = time() - 60
+					else
+						if RaidRoll_DB["debug"] == true then RR_Test("Normal operation") end
+						RR_FinishRolling()
+					end
+				else
+					if RaidRoll_DB["debug"] == true then RR_Test("Loot from a previous window") end
+					RR_FinishRolling()
+				end
+			else
+				RR_FinishRolling()
+			end
+		else
+			RR_FinishRolling()
+		end
+	end)
+
+	RR_RollCheckBox_ExtraRolls = CreateFrame("CheckButton", "RaidRollCheckBox_ExtraRolls", RR_BottomFrame, "UICheckButtonTemplate")
+	RR_RollCheckBox_ExtraRolls:SetWidth(20)
+	RR_RollCheckBox_ExtraRolls:SetHeight(20)
+	RR_RollCheckBox_ExtraRolls:SetPoint("BottomLeft", RR_BottomFrame, "BottomLeft", 10, 45)
+	_G["RaidRollCheckBox_ExtraRolls".."Text"]:SetText(RAIDROLL_LOCALE["Allow_Extra_Rolls"])
+	RR_RollCheckBox_ExtraRolls:SetScript("OnClick",RaidRoll_CheckButton_Update)
+
+	RR_Roll_ExtraOptions = CreateFrame("Button", "RaidRoll_ExtraOptionButton", RR_BottomFrame, "UIPanelButtonTemplate")
+	RR_Roll_ExtraOptions:SetWidth(80)
+	RR_Roll_ExtraOptions:SetHeight(15)
+	RR_Roll_ExtraOptions:SetPoint("BottomLeft", RR_BottomFrame, "BottomLeft", 50, 10)
+	RR_Roll_ExtraOptions:SetText(RAIDROLL_LOCALE["Options"])
+	RR_Roll_ExtraOptions:SetScript("OnClick",RR_OpenOptionsPanel)
+
+	Raid_Roll_ClearSymbols=CreateFrame("Button","Raid_Roll_ClearSymbols",RR_BottomFrame, "UIPanelButtonTemplate")
+	Raid_Roll_ClearSymbols:SetWidth(80); 
+	Raid_Roll_ClearSymbols:SetHeight(15);
+	Raid_Roll_ClearSymbols:SetText(RAIDROLL_LOCALE["Clear_Marks"])
+	Raid_Roll_ClearSymbols:SetPoint("BottomLeft", RR_BottomFrame, "BottomLeft",10,30)
+	Raid_Roll_ClearSymbols:SetScript("OnClick",function() StaticPopup_Show("Clear_Marks") end)
+
+	StaticPopupDialogs["Clear_Marks"] = {
+		text = RAIDROLL_LOCALE["Clear_all_marks"],
+		button1 = RAIDROLL_LOCALE["Yes"],
+		button2 = RAIDROLL_LOCALE["No"],
+		OnAccept = function()
+			RaidRoll_DBPC[UnitName("player")]["RR_NameMark"]={}
+			RR_Display(rr_CurrentRollID)
+			RR_Test(RAIDROLL_LOCALE["All_marks_cleared"])
+		end,
+		timeout = 0, whileDead = true, hideOnEscape = true,
+	}
+
+	Raid_Roll_ClearRolls=CreateFrame("Button","Raid_Roll_ClearRolls",RR_BottomFrame, "UIPanelButtonTemplate")
+	Raid_Roll_ClearRolls:SetWidth(80); 
+	Raid_Roll_ClearRolls:SetHeight(15);
+	Raid_Roll_ClearRolls:SetText(RAIDROLL_LOCALE["Clear_Rolls"])
+	Raid_Roll_ClearRolls:SetPoint("BottomLeft", RR_BottomFrame, "BottomLeft",90,30)
+	Raid_Roll_ClearRolls:SetScript("OnClick",function() StaticPopup_Show("Clear_Rolls") end)
+
+	StaticPopupDialogs["Clear_Rolls"] = {
+		text = RAIDROLL_LOCALE["Clear_all_saved_roll_memory"],
+		button1 = RAIDROLL_LOCALE["Yes"],
+		button2 = RAIDROLL_LOCALE["No"],
+		OnAccept = function()
+			rr_rollID = 0
+			rr_CurrentRollID = 0
+			RR_DisplayID = 0
+			RollerName = {}
+			MaxPlayers = {}
+			rr_Item = {}
+			RR_IgnoredList = {}
+			rr_Roll = {}
+			rr_PlayersRolled = {}
+			rr_playername = {}
+			RollerRoll = {}
+			RollerFirst = {}
+			RollerRank = {}
+			RollerRankIndex = {}
+			HasRolled = {}
+			Roll_Number = {}
+			RaidRoll_LegitRoll = {}
+			RollerColor = {}
+			RR_EPGPAboveThreshold = {}
+			RR_EPGP_PRValue = {}
+			RR_RollData = {}
+			RR_Timestamp = time()
+			RollerName[rr_rollID] = {}
+			RollerRoll[rr_rollID] = {}
+			RollerFirst[rr_rollID] = {}
+			RollerName[rr_rollID][1] = ""
+			rr_Item[rr_rollID] = "ID #"..rr_rollID
+			RR_Next:Disable()
+			RR_Last:Disable()
+			RR_NewRoll()
+			for i=1,5 do
+				_G["RR_Roller"..i]:SetText("")
+				_G["RR_Rolled"..i]:SetText("")
+				_G["Raid_Roll_Rank_String"..i]:SetText("")
+				_G["RR_Group"..i]:SetText("")
+			end
+			RR_Display(rr_CurrentRollID)
+			RR_Test(RAIDROLL_LOCALE["All_saved_rolls_cleared"])
+		end,
+		timeout = 0, whileDead = true, hideOnEscape = true,
+	}
+
+ RaidRoll_Slider = CreateFrame("Slider", "RaidRoll_Slider_ID", RR_RollFrame, "OptionsSliderTemplate")
+ RaidRoll_Slider:SetWidth(10)
+ RaidRoll_Slider:SetHeight(RR_RollFrame:GetHeight() - 75 )
+ RaidRoll_Slider:SetPoint('TOPRIGHT', -5, -25)
+ RaidRoll_Slider:SetOrientation('VERTICAL')
+ _G[RaidRoll_Slider:GetName() .. 'Low']:SetText('');
+ _G[RaidRoll_Slider:GetName() .. 'High']:SetText(''); 
+ _G[RaidRoll_Slider:GetName() .. 'Text']:SetText('');
+ RaidRoll_MaxNumber_Slider = 1
+ RaidRoll_Slider:SetMinMaxValues(1, RaidRoll_MaxNumber_Slider)
+ RaidRoll_Slider:SetValueStep(1)
+ RaidRoll_Slider:SetValue(1)
+  RaidRoll_Slider:SetScript("OnValueChanged",function()
+	RaidRoll_Window_Scroll(0)
+  end)
+
+ -- FIX BUG 1: arg1 ya no existe en 30300, usar delta
+ RR_RollFrame:EnableMouseWheel(1)
+ RR_RollFrame:SetScript("OnMouseWheel",function(self, delta)
+  RaidRoll_Window_Scroll(delta)
+ end)
+end
 																	Winner = string.upper(string.sub(Winner,1,1))..string.lower(string.sub(Winner,2))
 																end
 																
