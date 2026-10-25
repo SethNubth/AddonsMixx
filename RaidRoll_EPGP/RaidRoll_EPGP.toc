@@ -1,0 +1,10 @@
+## Interface: 30300
+## X-Compatible-With: 40000
+## Title: RollNaerzone - EPGP
+## Author: SethNubth 
+## Notes: Used to track EPGP
+## email: https://github.com/SethNubth
+## Dependencies: RaidRoll
+
+
+RaidRoll_EPGP.lua
