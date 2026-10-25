@@ -1,36 +1,21 @@
-
-							function RR_Raid()
-							name, ins_type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic = GetInstanceInfo()
-							
-							RR_Test("-----------")
-							RR_Test("Name: " .. name)
-							RR_Test("Type: " .. ins_type)
-							RR_Test("Difficult: " .. difficultyIndex)
-							RR_Test("Diff Name: " .. difficultyName)
-							RR_Test("Player: " .. maxPlayers)
-							RR_Test("Dynamic: " .. dynamicDifficulty)
-							end
-
-
-
-
-
-
-
-
-
-
-
-
-
+function RR_Raid()
+	name, ins_type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic = GetInstanceInfo()
+	
+	RR_Test("-----------")
+	-- FIX BUG 1: Si estás fuera de raid, GetInstanceInfo devuelve nil y ".." crashea
+	RR_Test("Name: " .. tostring(name))
+	RR_Test("Type: " .. tostring(ins_type))
+	RR_Test("Difficult: " .. tostring(difficultyIndex))
+	RR_Test("Diff Name: " .. tostring(difficultyName))
+	RR_Test("Player: " .. tostring(maxPlayers))
+	RR_Test("Dynamic: " .. tostring(dynamicDifficulty))
+end
 
 local dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("Raid Roll", {
 	text = "Raid Roll",
 	type = "data source",
 	icon = "Interface\\Icons\\INV_Helmet_74",
 	OnClick = function(clickedframe, button)
-		--InterfaceOptionsFrame_OpenToCategory(myconfigframe)
-		
 		if button == "LeftButton" then
 			if IsAltKeyDown() then 
 				RR_Command("loot")
@@ -39,9 +24,8 @@ local dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("Raid Roll
 			end
 		elseif button == "RightButton" then
 			RR_OptionsScreenToggle()
-			
 		end
-		if RaidRoll_DB["debug"] == true then RR_Test("You clicked with " .. button) end
+		if RaidRoll_DB["debug"] == true then RR_Test("You clicked with " .. tostring(button)) end
 	end,
 })
 
@@ -54,14 +38,10 @@ function RR_OptionsScreenToggle()
 	end
 end
 
-
-
 if dataobj ~= nil then
 
 	function dataobj:OnTooltipShow()
 		self:AddLine(RAIDROLL_LOCALE["BARTOOLTIP"])
-		
-		
 	end
 
 	function dataobj:OnEnter()
@@ -76,5 +56,4 @@ if dataobj ~= nil then
 		GameTooltip:Hide()
 	end
 	
-
 end
