@@ -1,17 +1,15 @@
 RaidRoll_LootTrackerLoaded=true
 
 -- =========================================================
--- RaidRoll LootTracker v4.1 Optimized for WotLK 30300
--- Fix: dupe Rotface 294/299 + arg1 + ToC/RS/Ulduar
+-- RaidRoll LootTracker v4.0 GOD EDITION - FULL COMPLETO
+-- Fix: 1 espalda = 1 fila - Anti Dupe por Ventana
+-- Fix: Rotface 294/299 + ToC/RS/Ulduar + WotLK Only
+-- Author: GOD
 -- =========================================================
 
-local RR_LastLootSeen = {}
-local RR_LastLootTime = 0
 local RR_LastLootMessageTime = 0
-
 local ACCEPTED_ITEMS = { [46110]=true, [47556]=true, [45087]=true, [49908]=true }
 local REJECTED_ITEMS = { [34057]=true, [36931]=true, [36919]=true, [36928]=true, [36934]=true, [36922]=true, [36925]=true, [47241]=true, [49426]=true }
-
 local WOTLK_RAIDS = { [533]=true, [615]=true, [616]=true, [624]=true, [603]=true, [631]=true, [724]=true, [249]=true, [543]=true, [544]=true, [545]=true, [546]=true, [547]=true }
 
 local strsplit_l = strsplit
@@ -25,19 +23,29 @@ local function GetItemID(link)
     return tonumber_l(id) or 0
 end
 
-local function IsDupe(itemID, name)
-    local now = GetTime_l()
-    if now - RR_LastLootTime > 120 then
-        for k,v in pairs(RR_LastLootSeen) do if now - v > 130 then RR_LastLootSeen[k]=nil end end
-        RR_LastLootTime = now
+-- =========================================================
+-- FIX GOD v4.0 - ANTI DUPE POR VENTANA
+-- Si el ItemID ya existe en la ventana actual (<30seg), es DUPE
+-- =========================================================
+local function IsDupe(itemID)
+    local db = RaidRoll_DB["Loot"]
+    if not db then return false end
+    local tw = db["TOTAL WINDOWS"]
+    if not tw or tw == 0 then return false end
+    if GetTime_l() - RR_LastLootMessageTime > 30 then return false end
+    local win = db[tw]
+    if not win or not win["TOTAL ITEMS"] or win["TOTAL ITEMS"]==0 then return false end
+    for i=1, win["TOTAL ITEMS"] do
+        local it = win["ITEM_"..i]
+        if it and it.ITEMLINK and GetItemID(it.ITEMLINK) == itemID then
+            return true
+        end
     end
-    local key = itemID.."_"..(name or "")
-    if RR_LastLootSeen[key] and now - RR_LastLootSeen[key] < 60 then return true end
-    RR_LastLootSeen[key] = now
     return false
 end
 
 local function IsWotLKContent()
+    if not RaidRoll_DBPC or not RaidRoll_DBPC[UnitName("player")] then return true end
     if not RaidRoll_DBPC[UnitName("player")]["RR_Frame_WotLK_Dung_Only"] then return true end
     local mapID = GetCurrentMapAreaID and GetCurrentMapAreaID() or 0
     if WOTLK_RAIDS[mapID] then return true end
@@ -46,6 +54,7 @@ local function IsWotLKContent()
 end
 
 function RaidRoll_LootPanel_Setup()
+    if not RaidRoll_LootPanel then return end
     local f = RaidRoll_LootPanel
     local function SetFont(fs, size) if GetLocale()=="zhCN" then fs:SetFont("Fonts\\ZYKai_T.TTF", size) else fs:SetFont("Fonts\\FRIZQT__.TTF", size) end end
     local t = f:CreateFontString(nil,"ARTWORK","GameFontNormal")
@@ -71,22 +80,26 @@ function RaidRoll_LootPanel_Setup()
     local function CreateCheck(name, y, text)
         local cb = CreateFrame("CheckButton", name, f, "UICheckButtonTemplate")
         cb:SetWidth(20) cb:SetHeight(20) cb:SetPoint("TopLeft", f, "TopLeft", 30, y)
-        _G[name.."Text"]:SetText("|cFFFFFFFF"..text) SetFont(_G[name.."Text"],12)
+        if _G[name.."Text"] then _G[name.."Text"]:SetText("|cFFFFFFFF"..text) SetFont(_G[name.."Text"],12) end
         cb:SetScript("OnClick", RaidRoll_CheckButton_Update_Panel) return cb
     end
     CreateCheck("RR_AutoOpenLootWindow", -250, RAIDROLL_LOCALE["Automatically_open_window_when_new_loot_is_found"])
     CreateCheck("RR_ReceiveGuildMessages", -270, RAIDROLL_LOCALE["Receive_loot_messages_from_guild"])
     CreateCheck("RR_Enable3Messages", -290, RAIDROLL_LOCALE["RR_Enable3Messages"])
     local cb = CreateCheck("RR_Frame_WotLK_Dung_Only", -310, RAIDROLL_LOCALE["RR_WotLK_Dung_Only"])
-    cb:SetScript("OnEnter", function(self) RR_MouseOverTooltip(self:GetName()) end)
-    cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    if cb then
+        cb:SetScript("OnEnter", function(self) RR_MouseOverTooltip(self:GetName()) end)
+        cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    end
 end
 
 function RR_DC() end
 
 function RR_AddonMessageReceived(String, Channel)
     if Channel~="RAID" and Channel~="PARTY" then
-        if Channel~="GUILD" or not RaidRoll_DBPC[UnitName("player")]["RR_ReceiveGuildMessages"] then return end
+        if Channel~="GUILD" then
+            if not RaidRoll_DBPC[UnitName("player")] or not RaidRoll_DBPC[UnitName("player")]["RR_ReceiveGuildMessages"] then return end
+        else return end
     end
     if not String then return end
     if not IsWotLKContent() then return end
@@ -110,12 +123,14 @@ function RR_AddonMessageReceived(String, Channel)
 
     if not ItemId or ItemId==0 or not lootName then return end
     if REJECTED_ITEMS[ItemId] then return end
-    if (rarity or 0) <=3 and not ACCEPTED_ITEMS[ItemId] and not RaidRoll_DB["debug"] then return end
-    if IsDupe(ItemId, lootName) then return end
+    if (rarity or 0) <=3 and not ACCEPTED_ITEMS[ItemId] and not (RaidRoll_DB and RaidRoll_DB["debug"]) then return end
+    
+    -- ANTI DUPE v4.0
+    if IsDupe(ItemId) then return end
 
     local now = GetTime_l()
     if now > (RR_LastLootMessageTime + 30) then
-        if RaidRoll_DBPC[UnitName("player")]["RR_AutoOpenLootWindow"] then RR_LOOT_FRAME:Show() end
+        if RaidRoll_DBPC[UnitName("player")] and RaidRoll_DBPC[UnitName("player")]["RR_AutoOpenLootWindow"] and RR_LOOT_FRAME then RR_LOOT_FRAME:Show() end
         if RaidRoll_Loot_Slider then RaidRoll_Loot_Slider:SetValue(1) end
         RR_LastLootMessageTime = now
         RaidRoll_DB["Loot"]["TOTAL WINDOWS"] = (RaidRoll_DB["Loot"]["TOTAL WINDOWS"] or 0) + 1
@@ -153,9 +168,33 @@ function RR_SetupLootFrame()
     if not RaidRoll_DB["Loot"] then RaidRoll_DB["Loot"]={} end
     RaidRoll_DB["Loot"]["TOTAL WINDOWS"]=RaidRoll_DB["Loot"]["TOTAL WINDOWS"] or 0
     RaidRoll_DB["Loot"]["CURRENT WINDOW"]=RaidRoll_DB["Loot"]["CURRENT WINDOW"] or 0
+    if not RR_LOOT_FRAME then RR_LOOT_FRAME = CreateFrame("Frame","RR_LOOT_FRAME",UIParent) end
     local backdrop = { bgFile="Interface\\Addons\\RaidRoll\\Images\\Lich_King", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=false, tileSize=32, edgeSize=20, insets={left=2,right=2,top=2,bottom=2} }
     RR_LOOT_FRAME:SetBackdrop(backdrop)
     RR_LOOT_FRAME:SetFrameStrata("MEDIUM") RR_LOOT_FRAME:SetWidth(245) RR_LOOT_FRAME:SetHeight(290)
     RR_LOOT_FRAME:SetMovable(true) RR_LOOT_FRAME:EnableMouse(true)
     RR_LOOT_FRAME:SetScript("OnMouseDown", function() RR_LOOT_FRAME:StartMoving() end)
-    RR_LOOT_FRAME:SetScript("OnMouseUp", function() RR_LOOT_FRAME
+    RR_LOOT_FRAME:SetScript("OnMouseUp", function() RR_LOOT_FRAME:StopMovingOrSizing() end)
+end
+
+function RR_Loot_Display_Refresh()
+    if not RaidRoll_DB or not RaidRoll_DB["Loot"] then return end
+    local tw = RaidRoll_DB["Loot"]["TOTAL WINDOWS"]
+    if not tw or tw==0 then return end
+    if RaidRoll_LootTracker_Display then
+        RaidRoll_LootTracker_Display()
+    else
+        if RR_LOOT_FRAME and RR_LOOT_FRAME:IsVisible() then
+            -- fallback simple refresh
+        end
+    end
+end
+
+-- Frame de Display Base (si no existe)
+if not RR_LOOT_FRAME then
+    RR_LOOT_FRAME = CreateFrame("Frame","RR_LOOT_FRAME",UIParent)
+    RR_LOOT_FRAME:SetPoint("CENTER",0,0)
+    RR_LOOT_FRAME:Hide()
+end
+
+print("|cFF00FF00[RaidRoll LootTracker v4.0 FULL GOD]|r Anti-Dupe activo - 1 espalda = 1 fila")
