@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: RaidGGLoter - God Edition
+## Notes: Loot Tracker sin M1/M2 - Muestra Win: Pepito 19 + Quien looteo primero - Anti dupe 2 espaldas
+## Author: GOD
+## Version: 1.0 Final
+## SavedVariables: RaidGGLoterDB
+RaidGGLoter.lua
